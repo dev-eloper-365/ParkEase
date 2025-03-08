@@ -13,11 +13,10 @@
   "directories": {
     "lib": "lib"
   },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js",
-    "startq": "nodemon server.js"
-  },
+"scripts": {
+  "start": "node server.js"
+},
+
   "keywords": [],
   "author": "",
   "license": "ISC",
