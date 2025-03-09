@@ -70,7 +70,7 @@ export default function ParkingDashboard() {
 
     async function fetchOccupancyData() {
       try {
-        const response = await fetch("http://localhost:5000/api/occupancy");
+        const response = await fetch("http://localhost:3000/api/occupancy");
         const data = await response.json();
         setOccupancyData(data);
 
