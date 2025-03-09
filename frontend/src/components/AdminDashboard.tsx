@@ -56,8 +56,8 @@ export default function ParkingDashboard() {
   useEffect(() => {
     async function fetchParkingData() {
       try {
-        // const response = await fetch("http://localhost:5000/api/parkingData");
-        const response = await fetch('$(import.meta.env.VITE_API_URL)/api/parkingData');
+        const response = await fetch("http://localhost:5000/api/parkingData");
+        // const response = await fetch('$(import.meta.env.VITE_API_URL)/api/parkingData');
         const data = await response.json();
         setParkingData(data);
         setFilteredCars(data);
