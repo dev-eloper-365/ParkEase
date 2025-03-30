@@ -58,13 +58,13 @@ export default function UserDashboard() {
     async function fetchData() {
       try {
         const parkingResponse = await fetch(
-          "https://k3tk0g1s-5000.inc1.devtunnels.ms/"
+          "https://parkease-21u2.onrender.com/"
         );
         const parkingData = await parkingResponse.json();
         setParkingData(parkingData);
 
         const occupancyResponse = await fetch(
-          "http://localhost:5000/api/occupancy"
+          "https://parkease-21u2.onrender.com/api/occupancy"
         );
         const occupancyData = await occupancyResponse.json();
         setOccupancyData(occupancyData);
