@@ -161,8 +161,8 @@ export default function UserDashboard() {
   };
 
   return (
-    <div className="h-screen w-full overflow-auto p-4 bg-gray-100">
-      <div className="container mx-auto p-4 space-y-4 bg-white border border-gray-300 rounded-lg shadow-lg">
+    <div className="h-screen w-full overflow-auto p-4 bg-background">
+      <div className="container mx-auto p-4 space-y-4">
         {/* First Row: Parking Space Status */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 flex-none">
           <Card className="md:col-span-3">
@@ -174,21 +174,19 @@ export default function UserDashboard() {
             <CardContent className="pt-2">
               <div className="flex justify-between items-center mb-2">
                 <div>
-                  <span className="text-red-500 text-2xl font-bold">
-                    {/* Occupied: {todayOccupancy.occupied} */}
+                  <span className="text-destructive text-2xl font-bold">
                     Occupied: 338
                   </span>
                 </div>
                 <div>
-                  <span className="text-green-500 text-2xl font-bold">
-                    {/* Vacant: {todayOccupancy.vacant} */}
+                  <span className="text-primary text-2xl font-bold">
                     Vacant: 112
                   </span>
                 </div>
               </div>
-              <div className="w-full bg-green-200 rounded-full h-4">
+              <div className="w-full bg-primary/20 rounded-full h-4">
                 <div
-                  className="bg-red-500 h-4 rounded-full"
+                  className="bg-destructive h-4 rounded-full"
                   style={{
                     width: `${(388 / 500) * 100}%`,
                   }}
@@ -208,21 +206,23 @@ export default function UserDashboard() {
               <CardContent className="pt-2">
                 <Popover>
                   <PopoverTrigger asChild>
-                  <Button variant="outline" style={{ backgroundColor: '#ffffff', color: '#000000' }}>
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {date ? date.toDateString() : "Select date"}
-            </Button>
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start text-left font-normal bg-black text-white border-[#333] hover:bg-black/90"
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {date ? date.toDateString() : "Select date"}
+                    </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
-                  <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={(newDate: Date | undefined) =>
-                    newDate && setDate(newDate)
-                  }
-                  initialFocus
-                  className="[&_button:not(:disabled)]:text-[#ffffff]"
-                />
+                    <Calendar
+                      mode="single"
+                      selected={date}
+                      onSelect={(newDate: Date | undefined) =>
+                        newDate && setDate(newDate)
+                      }
+                      initialFocus
+                    />
                   </PopoverContent>
                 </Popover>
               </CardContent>

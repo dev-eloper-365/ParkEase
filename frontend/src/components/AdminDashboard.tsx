@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Calendar as CalendarIcon, ArrowUpDown } from "lucide-react";
+import { Search, Calendar as CalendarIcon, ArrowUpDown, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -21,12 +21,11 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 
 const COLORS = [
-  "#0088FE",
-  "#00C49F",
-  "#FFBB28",
-  "#FF8042",
-  "#8884D8",
-  "#82ca9d",
+  "hsl(var(--chart-1))",
+  "hsl(var(--chart-2))",
+  "hsl(var(--chart-3))",
+  "hsl(var(--chart-4))",
+  "hsl(var(--chart-5))",
 ];
 
 export default function ParkingDashboard() {
@@ -56,9 +55,8 @@ export default function ParkingDashboard() {
   useEffect(() => {
     async function fetchParkingData() {
       try {
-        // const response = await fetch("http://parkingdashboard_srpproject.railway.internal/api/parkingData");
-        const response = await fetch("https://parking-backend-ohmo.onrender.com/api/parkingData");
-        // const response = await fetch('$(import.meta.env.VITE_API_URL)/api/parkingData');
+        const response = await fetch("http://localhost:8080/api/parkingData");
+        // const response = await fetch("https://parking-backend-ohmo.onrender.com/api/parkingData");
         const data = await response.json();
         setParkingData(data);
         setFilteredCars(data);
@@ -71,8 +69,8 @@ export default function ParkingDashboard() {
 
     async function fetchOccupancyData() {
       try {
-        // const response = await fetch("http://parkingdashboard_srpproject.railway.internal/api/occupancy");
-        const response = await fetch("https://parking-backend-ohmo.onrender.com/api/occupancy");
+        const response = await fetch("http://localhost:8080/api/occupancy");
+        // const response = await fetch("https://parking-backend-ohmo.onrender.com/api/occupancy");
         const data = await response.json();
         setOccupancyData(data);
 
@@ -151,8 +149,8 @@ export default function ParkingDashboard() {
   };
 
   return (
-    <div className="h-screen w-full overflow-auto p-4 bg-gray-100">
-      <div className="mx-auto w-full p-4 space-y-4 bg-white border border-gray-300 rounded-lg shadow-lg">
+    <div className="h-screen w-full overflow-auto p-4 bg-background">
+      <div className="container mx-auto p-4 space-y-4">
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex-1">
             <div className="relative">
@@ -166,29 +164,40 @@ export default function ParkingDashboard() {
               />
             </div>
           </div>
-          <Button onClick={handleSearch}>Search</Button>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" style={{ backgroundColor: '#ffffff', color: '#000000' }}>
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {date ? date.toDateString() : "Select date"}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0">
-            <Calendar
-              mode="single"
-              selected={date}
-              onSelect={setDate}
-              initialFocus
-              className="[&_button:not(:disabled)]:text-[#ffffff]"
-            />
-          </PopoverContent>
-        </Popover>
-        <Button variant="outline">
-          <ArrowUpDown className="mr-2 h-4 w-4" />
-          Sort
-        </Button>
-      </div>
+          <Button 
+            onClick={handleSearch} 
+            className="bg-white text-black hover:bg-white/90 px-6 flex items-center gap-2"
+          >
+            Search
+            <ArrowRight className="h-4 w-4" />
+          </Button>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button 
+                variant="outline" 
+                className="bg-black text-white border-[#333] hover:bg-black/90"
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {date ? date.toDateString() : "Select date"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0">
+              <Calendar
+                mode="single"
+                selected={date}
+                onSelect={setDate}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+          <Button 
+            variant="outline"
+            className="bg-black text-white border-[#333] hover:bg-black/90"
+          >
+            <ArrowUpDown className="mr-2 h-4 w-4" />
+            Sort
+          </Button>
+        </div>
 
         <Card className="w-full">
           <CardContent className="p-0">

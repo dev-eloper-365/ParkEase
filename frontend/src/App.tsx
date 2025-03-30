@@ -4,7 +4,7 @@ import User from "./components/UserDashboard";
 
 function App() {
   return (
-    <main className="flex items-center justify-center w-screen h-screen bg-zinc-200">
+    <main className="flex items-center justify-center w-screen h-screen bg-background dark">
       <Router>
         <Routes>
           <Route path="/" element={<Admin />} />
