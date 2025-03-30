@@ -263,9 +263,9 @@ export default function ParkingDashboard() {
                   </span>
                 </div>
                 <div>
-                  <span className="text-green-500 text-2xl font-bold">
-                    Vacant: 112
-                  </span>
+                <span className={`${isDark ? 'text-green-200' : 'text-green-500'} text-2xl font-bold`}>
+  Vacant: 112
+</span>
                 </div>
               </div>
               <div className="w-full bg-green-200 rounded-full h-2.5 mt-2">
