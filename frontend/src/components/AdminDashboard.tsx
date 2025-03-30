@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Calendar as CalendarIcon, ArrowUpDown, ArrowRight } from "lucide-react";
+import { Search, Calendar as CalendarIcon, ArrowUpDown, ArrowRight, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -19,13 +19,22 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import { useTheme } from "@/App";
 
-const COLORS = [
-  "hsl(var(--chart-1))",
-  "hsl(var(--chart-2))",
-  "hsl(var(--chart-3))",
-  "hsl(var(--chart-4))",
-  "hsl(var(--chart-5))",
+const DARK_COLORS = [
+  "#E63946",  // Red
+  "#F1FAEE",  // Light mint
+  "#A8DADC",  // Light blue
+  "#457B9D",  // Medium blue
+  "#1D3557"   // Dark blue
+];
+
+const LIGHT_COLORS = [
+  "#59D5E0",  // Turquoise/cyan
+  "#F5DD61",  // Yellow
+  "#FAA300",  // Orange
+  "#F4538A",  // Pink
+  "#FBF3B9"   // Light turquoise (added to complement the palette)
 ];
 
 export default function ParkingDashboard() {
@@ -35,6 +44,7 @@ export default function ParkingDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredCars, setFilteredCars] = useState([]);
   const [date, setDate] = useState<Date | undefined>();
+  const { isDark, toggleTheme } = useTheme();
   const [_thisWeekOccupancy, setThisWeekOccupancy] = useState(0);
   const [_todayOccupancy, setTodayOccupancy] = useState({
     occupied: 0,
@@ -42,13 +52,12 @@ export default function ParkingDashboard() {
   });
 
   const [parkingDurationData, _setParkingDurationData] = useState([
-    { name: " 10 AM", value: 20 },
-    { name: " 11 AM", value: 35 },
-    { name: " 12 PM", value: 25 },
-    { name: " 1 PM", value: 40 },
-    { name: " 2 PM", value: 30 },
+    { name: " 10 AM", value: 25 },
+    { name: " 11 AM", value: 30 },
+    { name: " 12 PM", value: 20 },
+    { name: " 1 PM", value: 15 },
+    { name: " 2 PM", value: 10 },
   ]);
-  
   
   const totalSpots = 500;
 
@@ -154,7 +163,7 @@ export default function ParkingDashboard() {
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex-1">
             <div className="relative">
-              <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500" />
+              <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
               <Input
                 type="text"
                 placeholder="Search by Number Plate"
@@ -166,7 +175,7 @@ export default function ParkingDashboard() {
           </div>
           <Button 
             onClick={handleSearch} 
-            className="bg-white text-black hover:bg-white/90 px-6 flex items-center gap-2"
+            className={`${isDark ? 'bg-white text-black' : 'bg-black text-white'} hover:opacity-90 px-6 flex items-center gap-2`}
           >
             Search
             <ArrowRight className="h-4 w-4" />
@@ -175,10 +184,9 @@ export default function ParkingDashboard() {
             <PopoverTrigger asChild>
               <Button 
                 variant="outline" 
-                className="bg-black text-white border-[#333] hover:bg-black/90"
+                className={`${isDark ? 'bg-black text-white border-[#333]' : 'bg-white text-black border-[#e5e5e5]'} hover:opacity-90 h-10 w-10 p-0`}
               >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {date ? date.toDateString() : "Select date"}
+                <CalendarIcon className="h-4 w-4" />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0">
@@ -192,10 +200,16 @@ export default function ParkingDashboard() {
           </Popover>
           <Button 
             variant="outline"
-            className="bg-black text-white border-[#333] hover:bg-black/90"
+            className={`${isDark ? 'bg-black text-white border-[#333]' : 'bg-white text-black border-[#e5e5e5]'} hover:opacity-90 h-10 w-10 p-0`}
           >
-            <ArrowUpDown className="mr-2 h-4 w-4" />
-            Sort
+            <ArrowUpDown className="h-4 w-4" />
+          </Button>
+          <Button
+            onClick={toggleTheme}
+            variant="outline"
+            className={`${isDark ? 'bg-black text-white border-[#333]' : 'bg-white text-black border-[#e5e5e5]'} hover:opacity-90 h-10 w-10 p-0`}
+          >
+            {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
         </div>
 
@@ -244,7 +258,7 @@ export default function ParkingDashboard() {
             <CardContent>
               <div className="flex justify-between items-center">
                 <div>
-                  <span className="text-red-500 text-2xl font-bold">
+                  <span className="text-[#E63946]-500 text-2xl font-bold">
                     Occupied: 388
                   </span>
                 </div>
@@ -295,9 +309,14 @@ export default function ParkingDashboard() {
             <CardContent>
               <ResponsiveContainer width="100%" height={260}>
                 <BarChart data={occupancyData}>
-                  <XAxis dataKey="time" />
-                  <YAxis />
-                  <Bar dataKey="value" fill="#0088FE" />
+                  <XAxis dataKey="time" stroke={isDark ? "#ffffff" : "#000000"} />
+                  <YAxis stroke={isDark ? "#ffffff" : "#000000"} />
+                  <Bar 
+                    dataKey="value" 
+                    fill={isDark ? "#ffffff" : "#202C33"}
+                    radius={[4, 4, 0, 0]}
+                    style={{ opacity: 4 }}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -316,11 +335,14 @@ export default function ParkingDashboard() {
                     cy="50%"
                     labelLine={false}
                     outerRadius={130}
-                    fill="#8884d8"
+                    stroke="none"
                     dataKey="value"
                   >
                     {parkingDurationData.map((_entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={isDark ? DARK_COLORS[index % DARK_COLORS.length] : LIGHT_COLORS[index % LIGHT_COLORS.length]} 
+                      />
                     ))}
                   </Pie>
                   <PieTooltip />
@@ -338,7 +360,7 @@ export default function ParkingDashboard() {
                       id: item.name,
                       type: 'circle',
                       value: item.name,
-                      color: COLORS[index % COLORS.length]
+                      color: isDark ? DARK_COLORS[index % DARK_COLORS.length] : LIGHT_COLORS[index % LIGHT_COLORS.length]
                     }))}
                     content={({ payload = [] }) => (
                       <ul style={{ 
