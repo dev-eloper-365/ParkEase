@@ -57,7 +57,7 @@ export default function ParkingDashboard() {
     async function fetchParkingData() {
       try {
         // const response = await fetch("http://parkingdashboard_srpproject.railway.internal/api/parkingData");
-        const response = await fetch("http://localhost:3000/api/parkingData");
+        const response = await fetch("https://parking-backend-ohmo.onrender.com/api/parkingData");
         // const response = await fetch('$(import.meta.env.VITE_API_URL)/api/parkingData');
         const data = await response.json();
         setParkingData(data);
@@ -72,7 +72,7 @@ export default function ParkingDashboard() {
     async function fetchOccupancyData() {
       try {
         // const response = await fetch("http://parkingdashboard_srpproject.railway.internal/api/occupancy");
-        const response = await fetch("http://localhost:3000/api/occupancy");
+        const response = await fetch("https://parking-backend-ohmo.onrender.com/api/occupancy");
         const data = await response.json();
         setOccupancyData(data);
 
