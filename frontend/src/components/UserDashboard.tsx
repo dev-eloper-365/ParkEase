@@ -62,7 +62,7 @@ export default function UserDashboard() {
         );
         const parkingData = await parkingResponse.json();
         setParkingData(parkingData);
-
+ 
         const occupancyResponse = await fetch(
           "https://parkease-21u2.onrender.com/api/occupancy"
         );
