@@ -55,8 +55,8 @@ export default function ParkingDashboard() {
   useEffect(() => {
     async function fetchParkingData() {
       try {
-        const response = await fetch("http://localhost:8080/api/parkingData");
-        // const response = await fetch("https://parking-backend-ohmo.onrender.com/api/parkingData");
+        // const response = await fetch("http://localhost:8080/api/parkingData");
+        const response = await fetch("https://parkease-21u2.onrender.com/api/parkingData");
         const data = await response.json();
         setParkingData(data);
         setFilteredCars(data);
@@ -69,8 +69,8 @@ export default function ParkingDashboard() {
 
     async function fetchOccupancyData() {
       try {
-        const response = await fetch("http://localhost:8080/api/occupancy");
-        // const response = await fetch("https://parking-backend-ohmo.onrender.com/api/occupancy");
+        // const response = await fetch("http://localhost:8080/api/occupancy");
+        const response = await fetch("https://parkease-21u2.onrender.com/api/occupancy");
         const data = await response.json();
         setOccupancyData(data);
 
