@@ -14,7 +14,6 @@
     "lib": "lib"
   },
   "scripts": {
-  "build": "mkdir -p public && echo 'Vercel deployment' > public/index.html",
   "start": "node server.js",
   "dev": "nodemon server.js"
 },
