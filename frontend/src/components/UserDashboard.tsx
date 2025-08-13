@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar as CalendarIcon, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
 import { LineChart, Line } from "recharts";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import { useTheme } from "@/App";
+import { useNavigate } from "react-router-dom";
 
 // TypeScript interfaces
 interface ParkingData {
@@ -40,6 +42,8 @@ interface OccupancyState {
 }
 
 export default function UserDashboard() {
+  const navigate = useNavigate();
+  const { isDark } = useTheme();
   const [parkingData, setParkingData] = useState<ParkingData[]>([]);
   const [_occupancyData, setOccupancyData] = useState<OccupancyData[]>([]);
   const [date, setDate] = useState<Date>(new Date());
@@ -163,6 +167,19 @@ export default function UserDashboard() {
   return (
     <div className="h-screen w-full overflow-auto p-4 bg-background">
       <div className="container mx-auto p-4 space-y-4">
+        {/* Header with Navigation */}
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-2xl font-bold">User Dashboard</h1>
+          <Button
+            onClick={() => navigate('/scan-license-plate')}
+            className={`${isDark ? 'bg-black text-white' : 'bg-white text-black'} hover:opacity-90 px-4 flex items-center gap-2`}
+            title="Scan License Plate"
+          >
+            <Camera className="h-4 w-4" />
+            Scan Plate
+          </Button>
+        </div>
+        
         {/* First Row: Parking Space Status */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 flex-none">
           <Card className="md:col-span-3">
@@ -208,7 +225,7 @@ export default function UserDashboard() {
                   <PopoverTrigger asChild>
                     <Button 
                       variant="outline" 
-                      className="w-full justify-start text-left font-normal bg-black text-white border-[#333] hover:bg-black/90"
+                      className={`w-full justify-start text-left font-normal ${isDark ? 'bg-black text-white border-[#333] hover:bg-black/90' : 'bg-white text-black border-[#e5e5e5] hover:bg-gray-50'}`}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
                       {date ? date.toDateString() : "Select date"}

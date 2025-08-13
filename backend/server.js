@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const parkingDataRoutes = require("./routes/parkingRoutes");
 const occupancyDataRoutes = require("./routes/occupancyRoutes");
+const scanLicensePlateRoutes = require("./routes/scanLicensePlate");
 require("dotenv").config();
 
 const app = express();
@@ -20,6 +21,7 @@ mongoose.connect(process.env.MONGODB_URI);
 
 app.use("/api/parkingData", parkingDataRoutes);
 app.use("/api/occupancy", occupancyDataRoutes);
+app.use("/api/scan-license-plate", scanLicensePlateRoutes);
 
 app.get("/", (req, res) => {
   res.send("Welcome to the API!");

@@ -2,6 +2,7 @@ import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import { createContext, useContext, useState } from "react";
 import Admin from "./components/AdminDashboard";
 import User from "./components/UserDashboard";
+import LicensePlateScanner from "./components/LicensePlateScanner";
 
 export const ThemeContext = createContext({
   isDark: true,
@@ -25,6 +26,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Admin />} />
             <Route path="/user" element={<User />} />
+            <Route path="/scan-license-plate" element={<LicensePlateScanner />} />
           </Routes>
         </Router>
       </main>

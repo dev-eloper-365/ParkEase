@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Calendar as CalendarIcon, ArrowUpDown, ArrowRight, Sun, Moon } from "lucide-react";
+import { Search, Calendar as CalendarIcon, ArrowUpDown, ArrowRight, Sun, Moon, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { useTheme } from "@/App";
+import { useNavigate } from "react-router-dom";
 
 const DARK_COLORS = [
   "#E63946",  // Red
@@ -38,6 +39,7 @@ const LIGHT_COLORS = [
 ];
 
 export default function ParkingDashboard() {
+  const navigate = useNavigate();
   const [parkingData, setParkingData] = useState([]);
   const [occupancyData, setOccupancyData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -203,6 +205,14 @@ export default function ParkingDashboard() {
             className={`${isDark ? 'bg-black text-white border-[#333]' : 'bg-white text-black border-[#e5e5e5]'} hover:opacity-90 h-10 w-10 p-0`}
           >
             <ArrowUpDown className="h-4 w-4" />
+          </Button>
+          <Button
+            onClick={() => navigate('/scan-license-plate')}
+            variant="outline"
+            className={`${isDark ? 'bg-black text-white border-[#333]' : 'bg-white text-black border-[#e5e5e5]'} hover:opacity-90 h-10 w-10 p-0`}
+            title="Scan License Plate"
+          >
+            <Camera className="h-4 w-4" />
           </Button>
           <Button
             onClick={toggleTheme}
