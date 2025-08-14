@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Upload, Camera, CheckCircle, AlertCircle, ArrowRight, Monitor, Settings } from 'lucide-react';
+import { Upload, Camera, CheckCircle, AlertCircle, ArrowRight, Monitor, Settings, Space } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTheme } from '@/App';
@@ -148,12 +148,8 @@ export default function LicensePlateScanner() {
       <div className="container mx-auto p-0 h-full flex flex-col gap-3">
         {/* Header */}
         <div className="text-center flex-none">
-          <h1 className="text-3xl font-bold mb-2">
-            License Plate Scanner
-          </h1>
-          <p className="text-muted-foreground">
-            Upload an image to automatically detect and register license plates
-          </p>
+          <h1 className={`text-3xl font-bold mb-2 ${isDark ? 'text-white' : 'text-black'}`}>License Plate Scanner</h1>
+          <p className={`${isDark ? 'text-white' : 'text-black'}`}>Upload an image to automatically detect and register license plates</p>
         </div>
 
         <div className="grid grid-cols-7 gap-4 flex-1 min-h-0 items-stretch">
@@ -161,135 +157,119 @@ export default function LicensePlateScanner() {
           <div className="col-span-5 h-full min-h-0">
             {/* Upload Section */}
             <Card className="flex flex-col h-full">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-base">
                   <Camera className="h-5 w-5" />
                   Scan License Plate
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex-1">
                 <div
-                  className={`relative flex h-[400px] flex-col items-center justify-center rounded-lg border-2 border-dashed transition-colors ${
+                  className={`relative flex h-[400px] w-full items-center justify-center rounded-lg border-2 border-dashed ${
                     dragActive 
-                      ? 'border-primary bg-secondary/50' 
-                      : isDark 
-                        ? 'border-gray-600 hover:border-gray-500' 
-                        : 'border-gray-300 hover:border-gray-400'
+                      ? (isDark ? 'border-white bg-black/20' : 'border-black bg-gray-50')
+                      : (isDark ? 'border-[#333]' : 'border-[#e5e5e5]')
                   }`}
                   onDragEnter={handleDrag}
                   onDragLeave={handleDrag}
                   onDragOver={handleDrag}
                   onDrop={handleDrop}
                 >
-                  
                   {uploadedImage ? (
                     <div className="relative w-full h-full">
                       <img
                         src={uploadedImage}
                         alt="Uploaded license plate"
-                        className="h-full w-full object-cover rounded-lg"
+                        className="h-full w-full object-cover rounded-lg blur-sm"
                       />
-                      {scanResult && (
-                        <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs flex items-center gap-1">
+
+                      {/* Processing overlay centered */}
+                      {isLoading && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="bg-white/95 dark:bg-black/90 border ${isDark ? 'border-[#333]' : 'border-[#e5e5e5]'} rounded-xl px-6 py-4 shadow-2xl flex items-center gap-3">
+                            <div className="animate-spin rounded-full h-6 w-6 border-2 border-black dark:border-white border-t-transparent" style={{animation: 'spinner-spin 1s linear infinite'}}></div>
+                            <p className="text-sm font-medium ${isDark ? 'text-white' : 'text-black'}">Processing image...</p>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Detected badge using dashboard palette */}
+                      {scanResult && !isLoading && (
+                        <div className={`absolute top-3 right-3 px-2 py-1 rounded-full text-xs flex items-center gap-1 shadow ${isDark ? 'bg-white text-black' : 'bg-black text-white'}`}>
                           <CheckCircle className="h-3 w-3" />
                           Detected
+                        </div>
+                      )}
+
+                      {/* Fixed-size results overlay using shadcn card */}
+                      {scanResult && !isLoading && (
+                        <div className="absolute inset-0 flex items-center justify-center p-4">
+                          <Card className={`rounded-2xl shadow-2xl border ${isDark ? 'bg-black border-[#333]' : 'bg-white border-[#e5e5e5]'} w-[520px] max-w-[90%] min-h-[240px]`}>
+                            <CardHeader className="pb-2">
+                              <CardTitle className={`text-center text-lg ${isDark ? 'text-white' : 'text-black'}`}>License Plate Detected</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-3">
+                              <div className="space-y-3 text-sm">
+                                <div className="flex justify-between items-center">
+                                  <span className="text-muted-foreground">Plate Number</span>
+                                  <span className={`font-mono font-bold text-xl px-3 py-1 rounded ${isDark ? 'bg-[#333] text-white' : 'bg-[#e5e5e5] text-black'}`}>{scanResult.plate}</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                  <span className="text-muted-foreground">Confidence</span>
+                                  <span className={`font-semibold px-3 py-1 rounded ${isDark ? 'bg-[#333] text-white' : 'bg-[#e5e5e5] text-black'}`}>{(scanResult.confidence * 100).toFixed(1)}%</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                  <span className="text-muted-foreground">Time In</span>
+                                  <span className={`font-semibold px-3 py-1 rounded ${isDark ? 'bg-[#333] text-white' : 'bg-[#e5e5e5] text-black'}`}>{scanResult.timeIn}</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                  <span className="text-muted-foreground">Block ID</span>
+                                  <span className={`font-mono text-xs px-3 py-1 rounded ${isDark ? 'bg-[#333] text-white' : 'bg-[#e5e5e5] text-black'}`}>{scanResult.blockId}</span>
+                                </div>
+                              </div>
+                              <div className="flex gap-2 pt-2">
+                                <Button
+                                  onClick={resetForm}
+                                  variant="outline"
+                                  className={`${isDark ? 'bg-black text-white border-[#333]' : 'bg-white text-black border-[#e5e5e5]'} hover:opacity-90 flex-1`}
+                                >
+                                  Scan Another Image
+                                </Button>
+                                <Button
+                                  onClick={goToDashboard}
+                                  className={`${isDark ? 'bg-white text-black' : 'bg-black text-white'} hover:opacity-90 flex-1`}
+                                >
+                                  <Monitor className="h-4 w-4 mr-2" />
+                                  Dashboard
+                                  <ArrowRight className="h-4 w-4 ml-2" />
+                                </Button>
+                              </div>
+                            </CardContent>
+                          </Card>
                         </div>
                       )}
                     </div>
                   ) : (
                     <>
-                      <Upload className={`mb-4 h-12 w-12 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
+                      <Upload className={`mb-4 h-12 w-12 ${isDark ? 'text-white/60' : 'text-black/60'}`} />
                       <p className="text-sm text-center text-muted-foreground mb-2">
-                        {showDemo ? 'Try demo images on the right or upload your own' : 'Drag and drop license plate image or click to upload'}
+                      &nbsp;&nbsp;Drag and drop license plate image or click to upload
                       </p>
-                      <p className="text-xs text-center text-muted-foreground">
-                        Supports JPG, PNG, GIF up to 5MB
-                      </p>
-                      {showDemo && (
-                        <p className="text-xs text-center text-blue-600 dark:text-blue-400 mt-2">
-                          💡 Click demo images to see how it works!
-                        </p>
-                      )}
-                      <input
-                        type="file"
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                        onChange={handleFileInput}
-                        accept="image/*"
-                      />
+                      <input type="file" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onChange={handleFileInput} accept="image/*" />
                     </>
                   )}
                 </div>
 
-                {/* Loading and Error States */}
-                {isLoading && (
-                  <div className="mt-4 text-center">
-                    <div className="inline-flex items-center gap-2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                      <p>Processing image...</p>
-                    </div>
-                  </div>
-                )}
-
+                {/* Remove bottom processing block; keep errors below for clarity */}
                 {error && (
-                  <div className="mt-4 text-center">
-                    <div className="inline-flex items-center gap-2 text-red-500">
+                  <div className="mt-3 text-center">
+                    <div className={`inline-flex items-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}>
                       <AlertCircle className="h-4 w-4" />
-                      <p>{error}</p>
+                      <p className="text-sm">{error}</p>
                     </div>
                   </div>
                 )}
 
-                {/* Scan Results */}
-                {scanResult && (
-                  <div className="mt-4 space-y-3">
-                    <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
-                      <h3 className="font-semibold text-green-800 dark:text-green-200 mb-2">
-                        License Plate Detected!
-                      </h3>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Plate Number:</span>
-                          <span className="font-mono font-bold text-lg">{scanResult.plate}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Confidence:</span>
-                          <span>{(scanResult.confidence * 100).toFixed(1)}%</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Time In:</span>
-                          <span>{scanResult.timeIn}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Block ID:</span>
-                          <span className="font-mono text-xs">{scanResult.blockId}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Action Buttons */}
-                {uploadedImage && (
-                  <div className="mt-4 flex justify-center gap-3">
-                    <Button 
-                      onClick={resetForm}
-                      variant="outline"
-                      className={`${isDark ? 'bg-black text-white border-[#333] hover:bg-black/90' : 'bg-white text-black border-[#e5e5e5] hover:bg-gray-50'}`}
-                    >
-                      Scan Another Image
-                    </Button>
-                    {scanResult && (
-                      <Button 
-                        onClick={goToDashboard}
-                        className={`${isDark ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-600'} text-white`}
-                      >
-                        <Monitor className="h-4 w-4 mr-2" />
-                        Go to Dashboard
-                        <ArrowRight className="h-4 w-4 ml-2" />
-                      </Button>
-                    )}
-                  </div>
-                )}
               </CardContent>
             </Card>
           </div>
@@ -297,64 +277,38 @@ export default function LicensePlateScanner() {
 {/* Right Side - Demo Guide (30%) */}
           <div className="col-span-2 h-full min-h-0">
                          {/* Step-by-Step Guide */}
-             <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-2 border-blue-200 dark:border-blue-800 h-full">
+             <Card className={`h-full border ${isDark ? 'border-[#333]' : 'bg-white border-[#e5e5e5]'}`}>
                <CardHeader className="pb-3">
-                 <CardTitle className="text-lg mb-3 text-center text-blue-800 dark:text-blue-200">
-                   🚀 Getting Started
-                 </CardTitle>
+                 <CardTitle className={`text-lg mb-3 text-center ${isDark ? 'text-white' : 'text-black'}`}>Getting Started</CardTitle>
                </CardHeader>
                 <CardContent className="h-full mt-1">
                {/* Step 1 */}
 <div className="flex items-start gap-3 mb-8">
-  <div
-    className={`w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5 font-bold flex-shrink-0 ${
-      isDark
-        ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/50'
-        : 'bg-blue-500 text-white shadow-lg shadow-blue-500/30'
-    }`}
-  >
-    1
-  </div>
+  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5 font-bold flex-shrink-0 ${isDark ? 'bg-white text-black' : 'bg-black text-white'}`}>1</div>
   <div className="min-w-0">
-    <h3 className="font-semibold mb-1 flex items-center gap-2 text-blue-800 dark:text-blue-200 text-lg">
+    <h3 className={`font-semibold mb-1 flex items-center gap-2 text-base ${isDark ? 'text-white' : 'text-black'}`}>
       <Settings className="h-4 w-4" />
       Setup Scanner
     </h3>
-    <p className="text-sm text-muted-foreground">
-      Scan license plates from images using our virtual scanner or set up an IoT camera
-    </p>
+    <p className="text-sm text-muted-foreground">Scan license plates from images using our virtual scanner or set up an IoT camera</p>
   </div>
 </div>
 
 {/* Step 2 */}
-<div className="flex items-start gap-3 mb-8">
-  <div
-    className={`w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5 font-bold flex-shrink-0 ${
-      isDark
-        ? 'bg-green-600 text-white shadow-lg shadow-green-500/50'
-        : 'bg-green-500 text-white shadow-lg shadow-green-500/30'
-    }`}
-  >
-    2
-  </div>
+<div className="flex items-start gap-3 mb-6">
+  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5 font-bold flex-shrink-0 ${isDark ? 'bg-white text-black' : 'bg-black text-white'}`}>2</div>
   <div className="min-w-0">
-    <h3 className="font-semibold mb-1 flex items-center gap-2 text-green-800 dark:text-green-200 text-lg">
+    <h3 className={`font-semibold mb-1 flex items-center gap-2 text-base ${isDark ? 'text-white' : 'text-black'}`}>
       <Monitor className="h-4 w-4" />
       Try Sample Images
     </h3>
-    <p className="text-sm text-muted-foreground">
-      Click any sample image below to see the scanner in action
-    </p>
+    <p className="text-sm text-muted-foreground">Drag any sample image below to try the license plate recognition</p>
     {/* Sample Images Grid - Only 2 side by side */}
     <div className="grid grid-cols-2 gap-2 mt-2">
       {demoImages.slice(0, 2).map((demoImage, index) => (
                                  <div 
                            key={index}
-                           className={`cursor-pointer rounded-lg border-2 border-dashed mt-2 transition-all hover:scale-105 hover:shadow-md w-20 h-16 ${
-                             isDark 
-                               ? 'border-gray-600 hover:border-blue-500 bg-gray-800/50 h-20 w-32' 
-                               : 'border-gray-300 hover:border-blue-500 bg-gray-50 h-20 w-15'
-                           }`}
+                           className={`cursor-pointer rounded-lg border-2 border-dashed mt-2 transition-all hover:scale-105 hover:shadow-md w-20 h-16 ${isDark ? 'border-[#333] bg-black/50 h-20 w-32' : 'border-[#e5e5e5] bg-white h-20 w-15'}`}
                            onClick={() => handleDemoImageClick(demoImage)}
                          >
                            <img 
@@ -369,24 +323,14 @@ export default function LicensePlateScanner() {
 </div>
 
 {/* Step 3 */}
-<div className="flex items-start gap-3 mb-8">
-  <div
-    className={`w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5 font-bold flex-shrink-0 ${
-      isDark
-        ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/50'
-        : 'bg-purple-500 text-white shadow-lg shadow-purple-500/30'
-    }`}
-  >
-    3
-  </div>
+<div className="flex items-start gap-3 mb-6">
+  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5 font-bold flex-shrink-0 mt-3 ${isDark ? 'bg-white text-black' : 'bg-black text-white'}`}>3</div>
   <div className="min-w-0">
-    <h3 className="font-semibold mb-1 flex items-center gap-2 text-purple-800 dark:text-purple-200 text-lg">
+    <h3 className={`font-semibold mb-1 flex items-center gap-2 mt-3 text-base ${isDark ? 'text-white' : 'text-black'}`}>
       <Monitor className="h-4 w-4" />
       Monitor Dashboard
     </h3>
-    <p className="text-sm text-muted-foreground">
-      View live feed of parking data and real-time updates
-    </p>
+    <p className="text-sm text-muted-foreground">View live feed of parking data and real-time updates</p>
   </div>
 </div>
 
@@ -399,7 +343,7 @@ export default function LicensePlateScanner() {
 
             {/* Recent Scans (when not in demo mode) */}
             {!showDemo && (
-              <Card className="mt-3">
+              <Card className={`${isDark ? 'bg-black border-[#333]' : 'bg-white border-[#e5e5e5]'} mt-3 border`}>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base">Recent Scans</CardTitle>
                 </CardHeader>
@@ -409,7 +353,7 @@ export default function LicensePlateScanner() {
                       {recentScans.slice(0, 2).map((scan, index) => (
                         <div 
                           key={scan._id || index}
-                          className={`p-2 rounded-lg border text-xs ${isDark ? 'border-gray-700 bg-gray-800/50' : 'border-gray-200 bg-gray-50'}`}
+                          className={`p-2 rounded-lg border text-xs ${isDark ? 'border-[#333] bg-black/50' : 'border-[#e5e5e5] bg-white'}`}
                         >
                           <div className="flex justify-between items-start">
                             <div>
