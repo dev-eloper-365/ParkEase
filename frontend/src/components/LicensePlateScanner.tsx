@@ -49,7 +49,8 @@ export default function LicensePlateScanner() {
     formData.append('image', file);
 
     try {
-      const response = await fetch('http://localhost:8080/api/scan-license-plate', {
+      const response = await fetch('https://parkease-21u2.onrender.com/api/scan-license-plate', {
+      // const response = await fetch('http://localhost:8080/api/scan-license-plate', {
         method: 'POST',
         body: formData,
       });
@@ -78,7 +79,8 @@ export default function LicensePlateScanner() {
 
   const fetchRecentScans = async () => {
     try {
-      const response = await fetch('http://localhost:8080/api/scan-license-plate');
+      // const response = await fetch('http://localhost:8080/api/scan-license-plate');
+      const response = await fetch('https://parkease-21u2.onrender.com/api/scan-license-plate');
       if (response.ok) {
         const data = await response.json();
         if (data.success) {
