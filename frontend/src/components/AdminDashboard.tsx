@@ -22,7 +22,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { useTheme } from "@/App";
 import { useNavigate } from "react-router-dom";
 
-const API_BASE = '/api';
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 const DARK_COLORS = [
   "#E63946",  // Red
