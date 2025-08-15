@@ -12,4 +12,35 @@ router.get("/", async (req, res) => {
   }
 });
 
+// DELETE /parkingData/:id - Delete a parking entry by ID
+router.delete("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Find and delete the parking entry
+    const deletedEntry = await ParkingData.findByIdAndDelete(id);
+    
+    if (!deletedEntry) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "Parking entry not found" 
+      });
+    }
+    
+    res.json({ 
+      success: true, 
+      message: "Parking entry deleted successfully",
+      deletedEntry: deletedEntry
+    });
+    
+  } catch (err) {
+    console.error("Error deleting parking entry:", err);
+    res.status(500).json({ 
+      success: false, 
+      message: "Failed to delete parking entry",
+      error: err.message 
+    });
+  }
+});
+
 module.exports = router;

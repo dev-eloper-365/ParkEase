@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTheme } from '@/App';
 import { useNavigate } from 'react-router-dom';
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
 interface ScanResult {
   plate: string;
   confidence: number;
@@ -49,8 +51,9 @@ export default function LicensePlateScanner() {
     formData.append('image', file);
 
     try {
-      const response = await fetch('https://parkease-21u2.onrender.com/api/scan-license-plate', {
+      // const response = await fetch('https://parkease-21u2.onrender.com/api/scan-license-plate', {
       // const response = await fetch('http://localhost:8080/api/scan-license-plate', {
+      const response = await fetch(`${API_BASE}/scan-license-plate`, {
         method: 'POST',
         body: formData,
       });
@@ -80,7 +83,8 @@ export default function LicensePlateScanner() {
   const fetchRecentScans = async () => {
     try {
       // const response = await fetch('http://localhost:8080/api/scan-license-plate');
-      const response = await fetch('https://parkease-21u2.onrender.com/api/scan-license-plate');
+      // const response = await fetch('https://parkease-21u2.onrender.com/api/scan-license-plate');
+      const response = await fetch(`${API_BASE}/scan-license-plate`);
       if (response.ok) {
         const data = await response.json();
         if (data.success) {

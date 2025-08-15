@@ -34,8 +34,13 @@ const upload = multer({
 });
 
 // License plate recognition API configuration
-const API_KEY = "851ee2036557883b14a629aa78894331bd1db831";
+const API_KEY = "d27ffe7c90f98ab6f23879ec61b3871ed0fcc8b4";
 const API_URL = "https://api.platerecognizer.com/v1/plate-reader/";
+
+// Validate API key
+if (!API_KEY || API_KEY === "your_api_key_here") {
+  console.error('Warning: Invalid or missing API key for license plate recognition');
+}
 
 // POST /scan-license-plate - Upload and process license plate image
 router.post('/', upload.single('image'), async (req, res) => {
@@ -51,8 +56,14 @@ router.post('/', upload.single('image'), async (req, res) => {
     const FormData = require('form-data');
     const formData = new FormData();
     formData.append('upload', fs.createReadStream(req.file.path));
+    
+    console.log('File uploaded:', req.file.originalname, 'Size:', req.file.size, 'bytes');
+    console.log('Form data headers:', formData.getHeaders());
 
     // Call the license plate recognition API
+    console.log('Calling external API with key:', API_KEY ? 'Present' : 'Missing');
+    console.log('API URL:', API_URL);
+    
     const response = await fetch(API_URL, {
       method: 'POST',
       headers: {
@@ -62,8 +73,13 @@ router.post('/', upload.single('image'), async (req, res) => {
       body: formData
     });
 
+    console.log('External API response status:', response.status);
+    console.log('External API response headers:', response.headers.raw());
+
     if (!response.ok) {
-      throw new Error('Failed to recognize license plate');
+      const errorText = await response.text();
+      console.error('External API Error Response:', errorText);
+      throw new Error(`External API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
@@ -72,14 +88,35 @@ router.post('/', upload.single('image'), async (req, res) => {
       const plate = data.results[0].plate.toUpperCase();
       const confidence = data.results[0].confidence;
       
+      // Generate random timeout time between 8am to 7pm
+      const now = new Date();
+      const timeIn = new Date();
+      
+      // Set random timeout between 8am to 7pm (same day)
+      const randomTimeout = new Date();
+      randomTimeout.setHours(8 + Math.floor(Math.random() * 11)); // 8am to 7pm (8-18)
+      randomTimeout.setMinutes(Math.floor(Math.random() * 60)); // Random minutes
+      randomTimeout.setSeconds(Math.floor(Math.random() * 60)); // Random seconds
+      
+      // Ensure timeout is after current time
+      if (randomTimeout <= timeIn) {
+        randomTimeout.setHours(timeIn.getHours() + 1 + Math.floor(Math.random() * 6)); // 1-6 hours after current time
+      }
+      
+      // Calculate duration in hours and minutes
+      const durationMs = randomTimeout.getTime() - timeIn.getTime();
+      const durationHours = Math.floor(durationMs / (1000 * 60 * 60));
+      const durationMinutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+      const duration = `${durationHours}h ${durationMinutes}m`;
+      
       // Create parking data object
       const parkingData = {
         no: Date.now(),
         type: 'Car',
         noPlate: plate,
-        timeIn: new Date().toLocaleTimeString(),
-        timeOut: '-',
-        duration: '-',
+        timeIn: timeIn.toLocaleTimeString(),
+        timeOut: randomTimeout.toLocaleTimeString(),
+        duration: duration,
         blockId: '0x' + Math.random().toString(16).slice(2, 10),
         confidence: confidence,
         imagePath: req.file.path,
@@ -102,6 +139,8 @@ router.post('/', upload.single('image'), async (req, res) => {
           confidence: confidence,
           parkingId: savedData._id,
           timeIn: parkingData.timeIn,
+          timeOut: parkingData.timeOut,
+          duration: parkingData.duration,
           blockId: parkingData.blockId
         }
       });
@@ -124,9 +163,32 @@ router.post('/', upload.single('image'), async (req, res) => {
       fs.unlinkSync(req.file.path);
     }
 
-    res.status(500).json({
+    // Provide more specific error messages based on error type
+    let errorMessage = 'Error processing license plate image';
+    let statusCode = 500;
+    
+    if (error.message.includes('External API error')) {
+      if (error.message.includes('401')) {
+        errorMessage = 'Invalid API key for license plate recognition service';
+        statusCode = 401;
+      } else if (error.message.includes('429')) {
+        errorMessage = 'Rate limit exceeded for license plate recognition service';
+        statusCode = 429;
+      } else if (error.message.includes('500')) {
+        errorMessage = 'License plate recognition service is temporarily unavailable';
+        statusCode = 503;
+      } else {
+        errorMessage = 'License plate recognition service error: ' + error.message.split(' - ')[1];
+        statusCode = 502;
+      }
+    } else if (error.message.includes('fetch')) {
+      errorMessage = 'Unable to connect to license plate recognition service';
+      statusCode = 503;
+    }
+
+    res.status(statusCode).json({
       success: false,
-      message: 'Error processing license plate image',
+      message: errorMessage,
       error: error.message
     });
   }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Calendar as CalendarIcon, ArrowUpDown, ArrowRight, Sun, Moon, Camera } from "lucide-react";
+import { Search, Calendar as CalendarIcon, ArrowUpDown, ArrowRight, Sun, Moon, Camera, X, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -21,6 +21,8 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { useTheme } from "@/App";
 import { useNavigate } from "react-router-dom";
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 const DARK_COLORS = [
   "#E63946",  // Red
@@ -62,12 +64,40 @@ export default function ParkingDashboard() {
   ]);
   
   const totalSpots = 500;
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const handleDeleteEntry = async (id: string) => {
+    try {
+      const response = await fetch(`${API_BASE}/parkingData/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete entry');
+      }
+
+      const result = await response.json();
+      
+      if (result.success) {
+        // Remove the deleted entry from the local state
+        setParkingData(prevData => prevData.filter((car: any) => car._id !== id));
+        setFilteredCars(prevData => prevData.filter((car: any) => car._id !== id));
+        console.log('Entry deleted successfully:', result.message);
+      } else {
+        throw new Error(result.message || 'Failed to delete entry');
+      }
+    } catch (error) {
+      console.error('Error deleting entry:', error);
+      // You could add a toast notification here for user feedback
+    }
+  };
 
   useEffect(() => {
     async function fetchParkingData() {
       try {
         // const response = await fetch("http://localhost:8080/api/parkingData");
-        const response = await fetch("https://parkease-21u2.onrender.com/api/parkingData");
+        const response = await fetch(`${API_BASE}/parkingData`);
         const data = await response.json();
         setParkingData(data);
         setFilteredCars(data);
@@ -81,7 +111,7 @@ export default function ParkingDashboard() {
     async function fetchOccupancyData() {
       try {
         // const response = await fetch("http://localhost:8080/api/occupancy");
-        const response = await fetch("https://parkease-21u2.onrender.com/api/occupancy");
+        const response = await fetch(`${API_BASE}/occupancy`);
         const data = await response.json();
         setOccupancyData(data);
 
@@ -235,25 +265,69 @@ export default function ParkingDashboard() {
                   <TableHead>Time-Out</TableHead>
                   <TableHead>Duration</TableHead>
                   <TableHead>BlockID</TableHead>
+                  <TableHead className="w-10"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={7}>Loading...</TableCell>
+                    <TableCell colSpan={8}>Loading...</TableCell>
                   </TableRow>
                 ) : (
-                  filteredCars.map((car: any, index) => (
-                    <TableRow key={car._id}>
-                      <TableCell>{index + 1}</TableCell>
-                      <TableCell>{car.type}</TableCell>
-                      <TableCell>{car.noPlate}</TableCell>
-                      <TableCell>{car.timeIn}</TableCell>
-                      <TableCell>{car.timeOut}</TableCell>
-                      <TableCell>{car.duration}</TableCell>
-                      <TableCell>{car.blockId}</TableCell>
-                    </TableRow>
-                  ))
+                  <>
+                    {filteredCars.slice(0, isExpanded ? filteredCars.length : 3).map((car: any, index) => (
+                      <TableRow key={car._id} className="group">
+                        <TableCell>{index + 1}</TableCell>
+                        <TableCell>{car.type}</TableCell>
+                        <TableCell>{car.noPlate}</TableCell>
+                        <TableCell>{car.timeIn}</TableCell>
+                        <TableCell>{car.timeOut}</TableCell>
+                        <TableCell>{car.duration}</TableCell>
+                        <TableCell>{car.blockId}</TableCell>
+                        <TableCell className="w-10">
+                          <X 
+                            className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer hover:scale-110" 
+                            style={{ color: isDark ? '#333' : '#e5e5e5' }}
+                            onClick={() => handleDeleteEntry(car._id)}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    
+                    {/* Expand/Collapse Row */}
+                    {filteredCars.length > 3 && (
+                      <TableRow 
+                        className="group cursor-pointer hover:bg-muted/50 transition-colors"
+                        onClick={() => setIsExpanded(!isExpanded)}
+                      >
+                        <TableCell colSpan={7} className="text-center">
+                          <div className="flex items-center justify-center gap-1 text-sm text-muted-foreground">
+                            {isExpanded ? 'Collapse' : 'Expand'}
+                            {isExpanded ? (
+                              <ChevronUp className="h-4 w-4" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4" />
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="w-10">
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                            {isExpanded ? (
+                              <ChevronUp 
+                                className="h-4 w-4" 
+                                style={{ color: isDark ? '#333' : '#e5e5e5' }}
+                              />
+                            ) : (
+                              <ChevronDown 
+                                className="h-4 w-4" 
+                                style={{ color: isDark ? '#333' : '#e5e5e5' }}
+                              />
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </>
                 )}
               </TableBody>
             </Table>
