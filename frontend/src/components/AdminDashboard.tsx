@@ -22,7 +22,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { useTheme } from "@/App";
 import { useNavigate } from "react-router-dom";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
+const API_BASE = '/api';
 
 const DARK_COLORS = [
   "#E63946",  // Red
@@ -55,7 +55,7 @@ export default function ParkingDashboard() {
     vacant: 0,
   });
 
-  const [parkingDurationData, _setParkingDurationData] = useState([
+  const [parkingDurationData, setParkingDurationData] = useState([
     { name: " 10 AM", value: 25 },
     { name: " 11 AM", value: 30 },
     { name: " 12 PM", value: 20 },
@@ -63,8 +63,10 @@ export default function ParkingDashboard() {
     { name: " 2 PM", value: 10 },
   ]);
   
-  const totalSpots = 500;
+  const totalSpots = 27;
   const [isExpanded, setIsExpanded] = useState(false);
+  const [currentOccupancy, setCurrentOccupancy] = useState({ occupied: 0, vacant: 0 });
+  const [averageWeeklyCars, setAverageWeeklyCars] = useState(0);
 
   const handleDeleteEntry = async (id: string) => {
     try {
@@ -81,8 +83,13 @@ export default function ParkingDashboard() {
       
       if (result.success) {
         // Remove the deleted entry from the local state
-        setParkingData(prevData => prevData.filter((car: any) => car._id !== id));
-        setFilteredCars(prevData => prevData.filter((car: any) => car._id !== id));
+        const updatedData = parkingData.filter((car: any) => car._id !== id);
+        setParkingData(updatedData);
+        setFilteredCars(updatedData);
+        
+        // Recalculate dynamic data after deletion
+        calculateDynamicData(updatedData);
+        
         console.log('Entry deleted successfully:', result.message);
       } else {
         throw new Error(result.message || 'Failed to delete entry');
@@ -101,6 +108,10 @@ export default function ParkingDashboard() {
         const data = await response.json();
         setParkingData(data);
         setFilteredCars(data);
+        
+        // Calculate dynamic data from parking data
+        calculateDynamicData(data);
+        
         setIsLoading(false);
       } catch (error) {
         console.error("Failed to fetch parking data:", error);
@@ -187,6 +198,60 @@ export default function ParkingDashboard() {
 
     // Set the state with the calculated values for this week
     setThisWeekOccupancy(averageOccupied);
+  };
+
+  // Calculate dynamic data from parking data
+  const calculateDynamicData = (parkingData: any[]) => {
+    // Count total number of entries as cars in campus
+    const totalCars = parkingData.length;
+    
+    setCurrentOccupancy({
+      occupied: totalCars,
+      vacant: totalSpots - totalCars
+    });
+
+    // Calculate average weekly cars from parking data
+    const now = new Date();
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    
+    const weeklyData = parkingData.filter((car: any) => {
+      const carDate = new Date(car.createdAt || car.timeIn);
+      return carDate >= oneWeekAgo;
+    });
+    
+    const average = weeklyData.length > 0 ? weeklyData.length / 7 : 0;
+    setAverageWeeklyCars(Math.round(average * 10) / 10); // Round to 1 decimal
+
+    // Calculate parking duration distribution
+    const durationStats = parkingData.reduce((acc: any, car: any) => {
+      if (car.duration && car.duration !== '-') {
+        // Parse duration like "2h 30m" to hours
+        const durationMatch = car.duration.match(/(\d+)h\s*(\d+)?m?/);
+        if (durationMatch) {
+          const hours = parseInt(durationMatch[1]);
+          const minutes = durationMatch[2] ? parseInt(durationMatch[2]) : 0;
+          const totalHours = hours + minutes / 60;
+          
+          if (totalHours <= 1) acc['0-1 Hr'] = (acc['0-1 Hr'] || 0) + 1;
+          else if (totalHours <= 2) acc['1-2 Hr'] = (acc['1-2 Hr'] || 0) + 1;
+          else if (totalHours <= 4) acc['2-4 Hr'] = (acc['2-4 Hr'] || 0) + 1;
+          else if (totalHours <= 8) acc['4-8 Hr'] = (acc['4-8 Hr'] || 0) + 1;
+          else acc['8 Hr+'] = (acc['8 Hr+'] || 0) + 1;
+        }
+      }
+      return acc;
+    }, {});
+
+          // Convert to chart format
+      const durationChartData = [
+        { name: '0-1 Hr', value: durationStats['0-1 Hr'] || 0 },
+        { name: '1-2 Hr', value: durationStats['1-2 Hr'] || 0 },
+        { name: '2-4 Hr', value: durationStats['2-4 Hr'] || 0 },
+        { name: '4-8 Hr', value: durationStats['4-8 Hr'] || 0 },
+        { name: '8 Hr+', value: durationStats['8 Hr+'] || 0 },
+      ];
+
+    setParkingDurationData(durationChartData);
   };
 
   return (
@@ -343,12 +408,12 @@ export default function ParkingDashboard() {
               <div className="flex justify-between items-center">
                 <div>
                   <span className="text-[#E63946]-500 text-2xl font-bold">
-                    Occupied: 388
+                    Occupied: {currentOccupancy.occupied}
                   </span>
                 </div>
                 <div>
                 <span className={`${isDark ? 'text-green-200' : 'text-green-500'} text-2xl font-bold`}>
-  Vacant: 112
+  Vacant: {currentOccupancy.vacant}
 </span>
                 </div>
               </div>
@@ -356,7 +421,7 @@ export default function ParkingDashboard() {
                 <div
                   className="bg-red-500 h-2.5 rounded-full"
                   style={{
-                    width: `${(388 / 500) * 100}%`,
+                    width: `${(currentOccupancy.occupied / totalSpots) * 100}%`,
                   }}
                 ></div>
               </div>
@@ -369,7 +434,7 @@ export default function ParkingDashboard() {
                 <CardTitle className="text-sm">No of Cars in Campus</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-3xl font-bold">388</p>
+                <p className="text-3xl font-bold">{parkingData.length}</p>
               </CardContent>
             </Card>
             <Card>
@@ -380,7 +445,7 @@ export default function ParkingDashboard() {
               </CardHeader>
               <CardContent>
                 <p className="text-3xl font-bold">
-                  246.2
+                  {averageWeeklyCars}
                 </p>
               </CardContent>
             </Card>
