@@ -24,6 +24,19 @@ import { useNavigate } from "react-router-dom";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
+interface ParkingData {
+  _id: string;
+  no: number;
+  type: string;
+  noPlate: string;
+  timeIn: string;
+  timeOut: string;
+  duration: string;
+  blockId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 const DARK_COLORS = [
   "#E63946",  // Red
   "#F1FAEE",  // Light mint
@@ -42,11 +55,11 @@ const LIGHT_COLORS = [
 
 export default function ParkingDashboard() {
   const navigate = useNavigate();
-  const [parkingData, setParkingData] = useState([]);
+  const [parkingData, setParkingData] = useState<ParkingData[]>([]);
   const [occupancyData, setOccupancyData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredCars, setFilteredCars] = useState([]);
+  const [filteredCars, setFilteredCars] = useState<ParkingData[]>([]);
   const [date, setDate] = useState<Date | undefined>();
   const { isDark, toggleTheme } = useTheme();
   const [_thisWeekOccupancy, setThisWeekOccupancy] = useState(0);
@@ -83,7 +96,7 @@ export default function ParkingDashboard() {
       
       if (result.success) {
         // Remove the deleted entry from the local state
-        const updatedData = parkingData.filter((car: any) => car._id !== id);
+        const updatedData = parkingData.filter((car) => car._id !== id);
         // Data is already sorted, so just update state
         setParkingData(updatedData);
         setFilteredCars(updatedData);
@@ -109,7 +122,7 @@ export default function ParkingDashboard() {
         const data = await response.json();
         
         // Sort by createdAt descending (newest first)
-        const sortedData = [...data].sort((a: any, b: any) => {
+        const sortedData = [...data as ParkingData[]].sort((a, b) => {
           const dateA = new Date(a.createdAt || a.updatedAt || 0).getTime();
           const dateB = new Date(b.createdAt || b.updatedAt || 0).getTime();
           return dateB - dateA; // Descending order (newest first)
@@ -161,11 +174,11 @@ export default function ParkingDashboard() {
   // Update filtered cars when parking data or search query changes
   useEffect(() => {
     if (searchQuery) {
-      const filtered = parkingData.filter((car: any) =>
+      const filtered = parkingData.filter((car) =>
         car.noPlate.toLowerCase().includes(searchQuery.toLowerCase())
       );
       // Sort filtered results by createdAt descending (newest first)
-      const sortedFiltered = [...filtered].sort((a: any, b: any) => {
+      const sortedFiltered = [...filtered].sort((a, b) => {
         const dateA = new Date(a.createdAt || a.updatedAt || 0).getTime();
         const dateB = new Date(b.createdAt || b.updatedAt || 0).getTime();
         return dateB - dateA;
@@ -177,11 +190,11 @@ export default function ParkingDashboard() {
   }, [parkingData, searchQuery]);
 
   const handleSearch = () => {
-    const filtered = parkingData.filter((car: any) =>
+    const filtered = parkingData.filter((car) =>
       car.noPlate.toLowerCase().includes(searchQuery.toLowerCase())
     );
     // Sort filtered results by createdAt descending (newest first)
-    const sortedFiltered = [...filtered].sort((a: any, b: any) => {
+    const sortedFiltered = [...filtered].sort((a, b) => {
       const dateA = new Date(a.createdAt || a.updatedAt || 0).getTime();
       const dateB = new Date(b.createdAt || b.updatedAt || 0).getTime();
       return dateB - dateA; // Descending order (newest first)
