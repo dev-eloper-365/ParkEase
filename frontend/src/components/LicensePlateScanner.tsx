@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Upload, Camera, CheckCircle, AlertCircle, ArrowRight, Monitor, Settings} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { NewCarNotification } from '@/components/ui/new-car-notification';
 import { useTheme } from '@/App';
 import { useNavigate } from 'react-router-dom';
 
@@ -25,6 +26,7 @@ export default function LicensePlateScanner() {
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
   const [recentScans, setRecentScans] = useState<any[]>([]);
   const [showDemo, setShowDemo] = useState(true);
+  const [showNotification, setShowNotification] = useState(false);
 
   // Demo images for first-time users
   const demoImages = [
@@ -67,6 +69,8 @@ export default function LicensePlateScanner() {
       
       if (data.success) {
         setScanResult(data.data);
+        // Show notification when new car is added
+        setShowNotification(true);
         // Refresh recent scans
         fetchRecentScans();
       } else {
@@ -127,13 +131,16 @@ export default function LicensePlateScanner() {
     setShowDemo(false);
     setUploadedImage(demoImage.src);
     // Simulate a successful scan for demo purposes
-    setScanResult({
+    const demoResult = {
       plate: demoImage.plate,
       confidence: 0.95,
       parkingId: 'demo-' + Date.now(),
       timeIn: new Date().toLocaleTimeString(),
       blockId: '0x' + Math.random().toString(16).slice(2, 10)
-    });
+    };
+    setScanResult(demoResult);
+    // Show notification for demo as well
+    setShowNotification(true);
     // Show a brief success message
     setTimeout(() => {
       setError(null);
@@ -149,8 +156,23 @@ export default function LicensePlateScanner() {
     fetchRecentScans();
   }, []);
 
+  const handleCloseNotification = () => {
+    setShowNotification(false);
+  };
+
   return (
-    <div className="h-screen w-full overflow-hidden p-4 bg-background">
+    <>
+      {/* New Car Notification */}
+      {showNotification && scanResult && (
+        <NewCarNotification
+          plate={scanResult.plate}
+          timeIn={scanResult.timeIn}
+          blockId={scanResult.blockId}
+          onClose={handleCloseNotification}
+        />
+      )}
+      
+      <div className="h-screen w-full overflow-hidden p-4 bg-background">
       <div className="container mx-auto p-0 h-full flex flex-col gap-3">
         {/* Header */}
         <div className="text-center flex-none">
@@ -387,5 +409,6 @@ export default function LicensePlateScanner() {
         </div>
       </div>
     </div>
+    </>
   );
 }
