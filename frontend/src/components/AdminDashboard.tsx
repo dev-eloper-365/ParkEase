@@ -84,6 +84,7 @@ export default function ParkingDashboard() {
       if (result.success) {
         // Remove the deleted entry from the local state
         const updatedData = parkingData.filter((car: any) => car._id !== id);
+        // Data is already sorted, so just update state
         setParkingData(updatedData);
         setFilteredCars(updatedData);
         
@@ -106,11 +107,18 @@ export default function ParkingDashboard() {
         // const response = await fetch("http://localhost:8080/api/parkingData");
         const response = await fetch(`${API_BASE}/parkingData`);
         const data = await response.json();
-        setParkingData(data);
-        setFilteredCars(data);
+        
+        // Sort by createdAt descending (newest first)
+        const sortedData = [...data].sort((a: any, b: any) => {
+          const dateA = new Date(a.createdAt || a.updatedAt || 0).getTime();
+          const dateB = new Date(b.createdAt || b.updatedAt || 0).getTime();
+          return dateB - dateA; // Descending order (newest first)
+        });
+        
+        setParkingData(sortedData);
         
         // Calculate dynamic data from parking data
-        calculateDynamicData(data);
+        calculateDynamicData(sortedData);
         
         setIsLoading(false);
       } catch (error) {
@@ -134,15 +142,51 @@ export default function ParkingDashboard() {
       }
     }
 
+    // Initial fetch
     fetchParkingData();
     fetchOccupancyData();
+
+    // Set up polling to refresh data every 3 seconds
+    const intervalId = setInterval(() => {
+      fetchParkingData();
+      fetchOccupancyData();
+    }, 3000); // Poll every 3 seconds
+
+    // Cleanup interval on unmount
+    return () => {
+      clearInterval(intervalId);
+    };
   }, []);
+
+  // Update filtered cars when parking data or search query changes
+  useEffect(() => {
+    if (searchQuery) {
+      const filtered = parkingData.filter((car: any) =>
+        car.noPlate.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      // Sort filtered results by createdAt descending (newest first)
+      const sortedFiltered = [...filtered].sort((a: any, b: any) => {
+        const dateA = new Date(a.createdAt || a.updatedAt || 0).getTime();
+        const dateB = new Date(b.createdAt || b.updatedAt || 0).getTime();
+        return dateB - dateA;
+      });
+      setFilteredCars(sortedFiltered);
+    } else {
+      setFilteredCars(parkingData);
+    }
+  }, [parkingData, searchQuery]);
 
   const handleSearch = () => {
     const filtered = parkingData.filter((car: any) =>
       car.noPlate.toLowerCase().includes(searchQuery.toLowerCase())
     );
-    setFilteredCars(filtered);
+    // Sort filtered results by createdAt descending (newest first)
+    const sortedFiltered = [...filtered].sort((a: any, b: any) => {
+      const dateA = new Date(a.createdAt || a.updatedAt || 0).getTime();
+      const dateB = new Date(b.createdAt || b.updatedAt || 0).getTime();
+      return dateB - dateA; // Descending order (newest first)
+    });
+    setFilteredCars(sortedFiltered);
   };
 
   const calculateTodayOccupancy = (data: any[]) => {
